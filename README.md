@@ -3,6 +3,14 @@ The Metadata
 
 This is the metadata. There are many like it but this one is ours.
 
+## Goals
+
+1. The metadata structure should support incremental construction. We may not
+   know the full details of every building component when we begin, but we
+   should not need to have a *complete* picture before we can start reasoning
+   about the building's structure.
+2. fill in more here
+
 ## Layered Approach
 
 No one metadata structure can accomplish everything. Our approach here is to
@@ -67,4 +75,18 @@ For controllers:
 * `Output`: X is some node whose state is the output of a controller, for example the
   damper position might be the output of an airflow controller.
 
-**Internal graph**: 
+**Internal graph**: A key goal of this metadata structure is supporting
+incremental construction.  A part of this is how to deal with larger, more
+complex components such as an air handling unit, which probably contains
+connections to heating and/or cooling loops, several fans and dampers and
+sensors. We may not know the construction of the airhandling unit, but we *do*
+know that it supplies air to some array of variable air volume boxes (VAVs).
+With a hierarchical graph, we can connect an Air Handling Unit node with a
+"feeds" relationship on the "supply air" output port to a set of VAV nodes.
+
+An internal graph consists of nodes and directed edges just like the "top
+level" graph with the addition that nodes at the "edges" of the internal graph
+should be connected to the named input/output ports of the encapsulating node.
+An example will make this clear.
+
+Answers the question: is the building metadata graph flat or hierarchical? Hierarchical.
