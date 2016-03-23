@@ -9,7 +9,11 @@ This is the metadata. There are many like it but this one is ours.
    know the full details of every building component when we begin, but we
    should not need to have a *complete* picture before we can start reasoning
    about the building's structure.
-2. fill in more here
+2. The eventual metadata structure should have a set of principled layers.
+   Attempting to account for all possible use cases can introduce a lot of
+   complexity, which makes it harder to understand and use the structure. With
+   clear separation of concern between layers, "higher" layers can implement
+   more specialized logic needed by fewer applications.
 
 ## Layered Approach
 
@@ -87,6 +91,7 @@ With a hierarchical graph, we can connect an Air Handling Unit node with a
 An internal graph consists of nodes and directed edges just like the "top
 level" graph with the addition that nodes at the "edges" of the internal graph
 should be connected to the named input/output ports of the encapsulating node.
+Nodes in an internal graph are the endpoint of  "contains" edges with the encapsulating node.
 An example will make this clear.
 
 Answers the question: is the building metadata graph flat or hierarchical? Hierarchical.
