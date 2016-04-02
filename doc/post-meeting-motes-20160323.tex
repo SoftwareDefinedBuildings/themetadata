@@ -30,13 +30,21 @@
 
 \section{Introduction}
 
-Figure \ref{fig:ahu1} as example.
+\section{The AHU-1 Example}
+
+Figure \ref{fig:ahu1} illustrates the graph we came up with for the flow, contains and controls relations.
+
+I have noticed two issues:
+\begin{enumerate}
+  \item In this example "Fan" is the name of a primitive node and as well as a complex node. In future naming, we should try to avoid this. It leads to awkwardly long fully-qualified names as illustrated in the following issue:
+  \item The relationship between the pressure controller and the primitive fan node crosses the boundary of the complex fan through a port. It is thus modeled as two edges, both named 'o' according to their output role to the controller. However, from perspective of the complex fan it is most definitely an input. As we need the ability to reason about partial graphs, perhaps we should find a side-independent name for both controller input and output.
+\end{enumerate}
 
 \begin{figure}[tp]
   \begin{center}
     \scalebox{0.8}{\includeSVG{ahu1_from_writeboard}}
   \end{center}
-  \caption{The flow, contains and control realions of Soda Hall's AHU-1.}
+  \caption{The flow, contains and control relations of Soda Hall's AHU-1.}
   \label{fig:ahu1}
 \end{figure}
 
