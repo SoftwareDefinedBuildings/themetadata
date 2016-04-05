@@ -30,6 +30,43 @@
 
 \section{Introduction}
 
+% base graph (intention, representing relationships as graph, graph type aspects, definition), 
+We want to represent all the relationships that we need to model as a multi-aspect graph. That is, a set of graphs -- each representing an aspect -- whereof a given node may be present in any subset. The combined graph is referred to as \textsl{the base graph}.
+
+% aspects
+Relevant aspects include (but are not limited to):
+\begin{itemize}
+  \descitem{Physical graph} This has the notion of spaces (aka rooms), boundaries, floors and floors. Room adjacency and room connectivity is modeled.
+  \descitem{HVAC graph} This includes (i) flows of air, steam and fluids, (ii) control signals and logic configuration, and (iii) HVAC zones. There is a many-to-many relationship between HVAC zones and spaces.
+  \descitem{Light graph} This includes (i) flows of light (windows and other optical constructs), (ii) control signals and logic configuration, and (iii) light zones. There is a many-to-many relationship between light zones and spaces.
+  \descitem{Electrical graph} Usually a distribution tree of meters, fuses and loads. However, it will become more complex in case of on-site renewables.
+  \descitem{Water graph} May be split into clean, gray and brown water?
+\end{itemize}
+
+% utility graphs (derived, convenient for resolving queries, view equivalent)
+From the base graph several utility graphs may be derived as convenient aides in query resolution. These are the functional equivalent of views. We refer to them as \textsl{derived graphs}.
+
+\section{Base Graph}
+
+An edge:
+\begin{itemize}
+  \descitem{Typed} An edge has a type from a semi-fixed set\footnote{This involves effort being spent finding the right \textsl{small} set that covers our use-cases while allowing for extensions}.
+\end{itemize}
+
+A node:
+\begin{itemize}
+  \descitem{Attributes} A node has a key-value store.
+  \descitem{Level} A node is one of:
+    \begin{itemize}
+      \descitem{Primitive}
+      \descitem{Complex}
+    \end{itemize}
+\end{itemize}
+
+\section{Derived Graphs}
+
+At the moment the main concerns are the base graph and the ability to run queries on it. With that in place it should be possible to create derived graphs.
+
 \section{The AHU-1 Example}
 
 Figure \ref{fig:ahu1} illustrates the graph we came up with for the flow, contains and controls relations.
@@ -48,8 +85,9 @@ I have noticed two issues:
   \label{fig:ahu1}
 \end{figure}
 
-\section{Graphs}
+\section{Prototype}
 
+Gabe mentioned networkx. I will look into that and -- if it is a nice fit -- start writing code.
 
 \end{document}
 
