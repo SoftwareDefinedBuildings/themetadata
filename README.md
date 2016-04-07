@@ -67,8 +67,10 @@ a user which relationship should exist between two nodes.
 The current array of edges types is as follows. For any relationship `<rel>`,
 the nature of the edge is `X <rel> Y := X -> Y`.
 * `Feeds`: some physical medium flows from X to Y
-* `Has a`: don't need this?
+* `Has a`: a notion of logical membership, e.g. an HVAC zone `has` rooms
 * `Contains`: the node Y is a component *within* component X.
+  an encapsulation of complexity?
+*
 
 For controllers:
 * `Controls`: if X is a controller, then Y is some entity that it acts on behalf of, e.g.
