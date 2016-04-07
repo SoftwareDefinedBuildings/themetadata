@@ -23,5 +23,7 @@ figs/aspects-graph-example.pdf: figs/aspects-graph-example.svg
 
 post-meeting-motes-20160323.pdf: post-meeting-motes-20160323.tex figs/ahu1_from_writeboard.pdf figs/aspects-graph-example.pdf
 	pdflatex post-meeting-motes-20160323.tex
+	bibtex post-meeting-motes-20160323
+	pdflatex post-meeting-motes-20160323.tex
 	pdflatex post-meeting-motes-20160323.tex
 

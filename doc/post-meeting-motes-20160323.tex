@@ -26,9 +26,19 @@
 
 \maketitle
 \tableofcontents
-\newpage
+%\newpage
 
 \section{Introduction}
+
+The goals are (abbreviated from Gabe's notes in the README):
+\begin{itemize}
+  \descitem{Incremental construction} We should be able to represent and work with partial models.
+  \descitem{Abstraction through nesting} We should use nesting to lessen the burden of understanding when dealing with a human consumer.
+\end{itemize}
+
+\section{Approach}
+
+\nocite{nederveen1992}
 
 % base graph (intention, representing relationships as graph, graph type aspects, definition), 
 We want to represent all the relationships that we need to model as a multi-aspect graph. That is, a set of graphs -- each representing an aspect -- whereof a given node may be present in any subset. The combined graph is referred to as \textsl{the base graph}.
@@ -43,33 +53,60 @@ Relevant aspects include (but are not limited to):
   \descitem{Water graph} May be split into clean, gray and brown water?
 \end{itemize}
 
+\textbf{TODO:} Do we explicitly map edges to aspects?
+
 % utility graphs (derived, convenient for resolving queries, view equivalent)
 From the base graph several utility graphs may be derived as convenient aides in query resolution. These are the functional equivalent of views. We refer to them as \textsl{derived graphs}.
 
 \section{Base Graph}
 
-An edge:
-\begin{itemize}
-  \descitem{Typed} An edge has a type from a semi-fixed set\footnote{This involves effort being spent finding the right \textsl{small} set that covers our use-cases while allowing for extensions}.
-\end{itemize}
+This is what Gabe refers to as a "root" structure.
 
-A node:
-\begin{itemize}
-  \descitem{Attributes} A node has a key-value store.
-  \descitem{Level} A node is one of:
-    \begin{itemize}
-      \descitem{Primitive}
-      \descitem{Complex}
-    \end{itemize}
-\end{itemize}
+\subsection{Nodes}
+
+Nodes represents logical and physical components. Nodes come in two shapes; primitive and complex. Both are typed from a semi-fixed set\footnote{This involves effort being spent finding the right \textsl{small} set that covers our use-cases while allowing for extensions}.
+
+A primitive node is just a node representing something. A complex node is a subgraph where we refer to the nodes on the edge as \textsl{ports}. On the conceptual level these are named. These port nodes may end up being little more than artificial constructs aiding the modeling. One could define a simple node as a trivial case of a complex node with a single port.
+
+\textbf{TODO:} Do the port names come from a semi-fixed set?
+
+This allows us to nest graphs. The attribute \textsl{hierarchical} was used at one meeting. I disliked that as it made me think of tree structures. I guess it is, only in another dimension \ldots Anyways, the nested graphs helps us represent structures about which we are lacking knowledge. The problem is not solved though, only encapsulated.
+
+Nodes have attributes in the form of a key-value store.
+
+\subsection{Edges}
+
+Edges are typed from a semi-fixed set and represents relationships. Like nodes, they also have a key-value store for attributes.
+
+\subsection{Operators}
+
+The discussion of operators is still in the early stages.
+
+\subsection{Traversal}
+
+Graph traversal needs to cross the boundaries of complex nodes, as well as aspects.
 
 \section{Derived Graphs}
 
-At the moment the main concerns are the base graph and the ability to run queries on it. With that in place it should be possible to create derived graphs.
+At the moment the main concerns are the base graph and the ability to run queries on it. With that in place it should be possible to create derived graphs. This is what Gabe refers to as "views".
+
+\section{Vocabulary}
+
+I like "views" but am not too big a fan of "root structure". Accordingly, I came up with the "base graph" and "derived graph" terms which fits nicely together. I would prefer to use views though \ldots
+
+\textbf{TODO:} We should start maintaining a list of vocabulary definitions.
 
 \section{The AHU-1 Example}
 
 Figure \ref{fig:ahu1} illustrates the graph we came up with for the flow, contains and controls relations.
+
+\begin{figure}[tb]
+  \begin{center}
+    \scalebox{0.8}{\includeSVG{ahu1_from_writeboard}}
+  \end{center}
+  \caption{The flow, contains and control relations of Soda Hall's AHU-1. $f$ is flow, $i$ is input and $o$ is output.}
+  \label{fig:ahu1}
+\end{figure}
 
 I have noticed two issues:
 \begin{enumerate}
@@ -77,19 +114,11 @@ I have noticed two issues:
   \item The relationship between the pressure controller and the primitive fan node crosses the boundary of the complex fan through a port. It is thus modeled as two edges, both named 'o' according to their output role to the controller. However, from perspective of the complex fan it is most definitely an input. As we need the ability to reason about partial graphs, perhaps we should find a side-independent name for both controller input and output.
 \end{enumerate}
 
-\begin{figure}[tp]
-  \begin{center}
-    \scalebox{0.8}{\includeSVG{ahu1_from_writeboard}}
-  \end{center}
-  \caption{The flow, contains and control relations of Soda Hall's AHU-1.}
-  \label{fig:ahu1}
-\end{figure}
-
 \section{Example Building}
 
-Figure \ref{fig:aspects} contain a low-detail example of a partial building, illustrating how it might be sliced into aspects.
+Figure \ref{fig:aspects} contain a low-detail example of a partial building, illustrating how it might be sliced into aspects. The edges are typeless for simplicity.
 
-\begin{figure}[tp]
+\begin{figure}[tb]
   \begin{center}
     \scalebox{0.7}{\includeSVG{aspects-graph-example}}
   \end{center}
@@ -97,9 +126,19 @@ Figure \ref{fig:aspects} contain a low-detail example of a partial building, ill
   \label{fig:aspects}
 \end{figure}
 
+I have noticed three issues:
+\begin{enumerate}
+  \item What is in a light zone? In this example I have connected the PIR sensor and lamp to the zone. We need to do the exercise of drawing the system using typed edges while having a more concise definition of the nodes involved.
+  \item With respect to the electrical aspect what do we want to model? For instance, do we care about a temperature sensor? In my mind the answer is yes, although we need the model as well as the logic on top of it to function with incomplete knowledge. This would result in a large fanout from the submeter nodes.
+  \item In the HVAC world, is an AHU or a VAV a physical or a logical unit? If it is a logical unit then the temperature sensor and the damper of a VAV could be far apart and on different submeters. In such a case, does the VAV have one electrical port for each component or do aspects break the encapsulation?
+\end{enumerate}
+
 \section{Prototype}
 
 Gabe mentioned networkx. I will look into that and -- if it is a nice fit -- start writing code.
+
+\bibliography{references}{}
+\bibliographystyle{plain}
 
 \end{document}
 
