@@ -11,19 +11,23 @@ from graph import *
 
 
 def construct_fan_assembly (nodelist=None):
-    flow_sensor = PrimitiveNode({'name': 'Flow Sensor'})
-    fan         = PrimitiveNode({'name': 'Fan'})
-    edge = Edge('flow', flow_sensor, fan)
+    nodes = []
+    flow_sensor = PrimitiveNode({'name': 'Flow Sensor'}, nodes)
+    fan         = PrimitiveNode({'name': 'Fan'}, nodes)
+    
+    edges = []
+    Edge('flow', flow_sensor, fan, edgelist=edges)
     
     incoming_portmap = {
         'input': [{'node': flow_sensor}],
         'control': [{'node': fan}],
     }
+    
     outgoing_portmap = {
         'output': [{'node': fan}],
     }
     
-    return ComplexNode([flow_sensor, fan], [edge], incoming_portmap, outgoing_portmap, {'name': 'Fan Construct'}, nodelist=nodelist)
+    return ComplexNode(nodes, edges, incoming_portmap, outgoing_portmap, {'name': 'Fan Construct'}, nodelist=nodelist)
 
 
 def construct_ahu1 ():
@@ -85,4 +89,7 @@ def construct_ahu1 ():
     return ComplexNode(nodes, edges, incoming_portmap, outgoing_portmap, {'name': 'AHU-1'})
 
 ahu1 = construct_ahu1()
+ahu1.store_dotfile('ahu1.dot')
+
+# dot -Tpdf ahu1.dot -Gnewank -o ahu1.pdf
 
