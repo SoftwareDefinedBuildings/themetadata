@@ -2,6 +2,9 @@
 
 from graph import *
 
+import matplotlib.pyplot as plt
+import networkx as nx
+
 # Abbreviations used:
 #  - ea: exhaust air
 #  - ma: mixed air
@@ -88,8 +91,19 @@ def construct_ahu1 ():
     
     return ComplexNode(nodes, edges, incoming_portmap, outgoing_portmap, {'name': 'AHU-1'})
 
+def nx_draw (g):
+    labels = {}
+    for node in g.nodes():
+        labels[node] = g.node[node]['name']
+    positions = nx.spring_layout(g, iterations=200)
+    nx.draw(g, positions)
+    nx.draw_networkx_labels(g, positions, labels)
+    plt.savefig("ahu1.nx.png")
+
 ahu1 = construct_ahu1()
 ahu1.store_dotfile('ahu1.dot')
+g = ahu1.export_nx()
+nx_draw(g)
 
-# dot -Tpdf ahu1.dot -Gnewank -o ahu1.pdf
+# dot -Tpdf ahu1.dot -Gnewank -o ahu1.dot.pdf
 

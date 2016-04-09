@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import networkx as nx
 
 class Node:
     @abstractmethod
@@ -21,6 +22,7 @@ class PrimitiveNode (Node):
     
     def add_incoming (self, edge, port): self.incoming.append(edge)
     def add_outgoing (self, edge, port): self.outgoing.append(edge)
+    def get_outgoing (self): return self.outgoing
 
 class ComplexNode (Node):
     def __init__ (self, nodes, edges, incoming_portmap, outgoing_portmap, attrs={}, nodelist=None):
@@ -109,6 +111,88 @@ class ComplexNode (Node):
         
         with open(filename, 'w') as fo:
             fo.writelines(map(lambda line: line+'\n', lines))
+    
+#    def as_nx (self, nodemap, counter):
+#        def reachability
+#        
+#        # self
+#        nodemap[self] = 'node'+str(counter[0])
+#        counter[0] += 1
+#        g.add_node(nodemap[self], attr_dict=self.attrs)
+#        
+#        # true nodes
+#        for node in self.nodes:
+#            if not node in nodemap:
+#                if type(node)==ComplexNode:
+#                    node.as_nx(nodemap, counter)
+#                else:
+#                    nodemap[node] = 'node'+str(counter[0])
+#                    counter[0] += 1
+#                    g.add_node(nodemap[node], attr_dict=node.attrs)
+#        
+#        # ports
+#        
+#        # edges
+#        
+    
+    def get_primitive_nodes (self, nodelist=[], processed=[]):
+        # guard: don't loop
+        if self in processed: return
+        processed.append(self)
+        
+        for node in self.nodes:
+            if type(node)==PrimitiveNode:
+                if not node in processed:
+                    nodelist.append(node)
+                processed.append(node)
+            else:
+                node.get_primitive_nodes(nodelist, processed)
+        
+        return nodelist
+    
+    def export_nx (self):
+        g = nx.DiGraph()
+        counter = [0]
+        nodemap = {}
+        
+        nodes = self.get_primitive_nodes()
+        
+#        self.as_nx(g, counter, nodemap)
+        
+        # add nodes
+        for node in nodes:
+            if type(node)==PrimitiveNode:
+                nodemap[node] = 'node'+str(counter[0])
+                counter[0] += 1
+                g.add_node(nodemap[node], attr_dict=node.attrs)
+        
+        # add edges
+        for node in nodes:
+            if type(node)==PrimitiveNode:
+                edges = node.get_outgoing()
+                for edge in edges:
+                    if edge.primitive_dst():
+                        g.add_edge(nodemap[node],nodemap[edge.dst])
+                    else:
+                        dsts = edge.find_dsts()
+                        for dst in dsts:
+                            g.add_edge(nodemap[node],nodemap[dst])
+        
+        return g
+    
+    def find_dsts (self, port, dsts=[], nodelist=[]):
+        # new or processed node?
+        if self in nodelist:
+            return dsts
+        else:
+            nodelist.append(self)
+        
+        edges = self.incoming['inside'] if port in self.incoming else self.outgoing['outside']
+        
+        for edge in edges:
+            edge.find_dsts(dsts, nodelist)
+        
+        return dsts
 
 class Edge:
     def __init__ (self, edgetype, src, dst, src_port=None, dst_port=None, attrs={}, edgelist=None):
@@ -128,6 +212,20 @@ class Edge:
     def primitive_dst (self): return self.dst_port == None
     def complex_src (self): return not self.primitive_src()
     def complex_dst (self): return not self.primitive_dst()
+    
+    def find_dsts (self, dsts=[], nodelist=[]):
+        # new or processed node?
+        if self.dst in nodelist:
+            return dsts
+        else:
+            nodelist.append(self.dst)
+        
+        if self.primitive_dst():
+            dsts.append(self.dst)
+        else:
+            self.dst.find_dsts(self.dst_port, dsts, nodelist)
+        
+        return dsts
 
 
 
