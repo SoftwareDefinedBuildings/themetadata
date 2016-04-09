@@ -112,29 +112,6 @@ class ComplexNode (Node):
         with open(filename, 'w') as fo:
             fo.writelines(map(lambda line: line+'\n', lines))
     
-#    def as_nx (self, nodemap, counter):
-#        def reachability
-#        
-#        # self
-#        nodemap[self] = 'node'+str(counter[0])
-#        counter[0] += 1
-#        g.add_node(nodemap[self], attr_dict=self.attrs)
-#        
-#        # true nodes
-#        for node in self.nodes:
-#            if not node in nodemap:
-#                if type(node)==ComplexNode:
-#                    node.as_nx(nodemap, counter)
-#                else:
-#                    nodemap[node] = 'node'+str(counter[0])
-#                    counter[0] += 1
-#                    g.add_node(nodemap[node], attr_dict=node.attrs)
-#        
-#        # ports
-#        
-#        # edges
-#        
-    
     def get_primitive_nodes (self, nodelist=[], processed=[]):
         # guard: don't loop
         if self in processed: return
@@ -150,14 +127,26 @@ class ComplexNode (Node):
         
         return nodelist
     
+    def find_dsts (self, port, dsts=[], nodelist=[]):
+        # new or processed node?
+        if self in nodelist:
+            return dsts
+        else:
+            nodelist.append(self)
+        
+        edges = self.incoming['inside'] if port in self.incoming else self.outgoing['outside']
+        
+        for edge in edges:
+            edge.find_dsts(dsts, nodelist)
+        
+        return dsts
+    
     def export_nx (self):
         g = nx.DiGraph()
         counter = [0]
         nodemap = {}
         
         nodes = self.get_primitive_nodes()
-        
-#        self.as_nx(g, counter, nodemap)
         
         # add nodes
         for node in nodes:
@@ -179,20 +168,6 @@ class ComplexNode (Node):
                             g.add_edge(nodemap[node],nodemap[dst])
         
         return g
-    
-    def find_dsts (self, port, dsts=[], nodelist=[]):
-        # new or processed node?
-        if self in nodelist:
-            return dsts
-        else:
-            nodelist.append(self)
-        
-        edges = self.incoming['inside'] if port in self.incoming else self.outgoing['outside']
-        
-        for edge in edges:
-            edge.find_dsts(dsts, nodelist)
-        
-        return dsts
 
 class Edge:
     def __init__ (self, edgetype, src, dst, src_port=None, dst_port=None, attrs={}, edgelist=None):
@@ -226,6 +201,4 @@ class Edge:
             self.dst.find_dsts(self.dst_port, dsts, nodelist)
         
         return dsts
-
-
 
