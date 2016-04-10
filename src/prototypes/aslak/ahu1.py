@@ -22,12 +22,12 @@ def construct_fan_assembly (nodelist=None):
     Edge('flow', flow_sensor, fan, edgelist=edges)
     
     incoming_portmap = {
-        'input': [{'node': flow_sensor}],
-        'control': [{'node': fan}],
+        'input': [{'node': flow_sensor, 'type': 'flow'}],
+        'control': [{'node': fan, 'type': 'control'}],
     }
     
     outgoing_portmap = {
-        'output': [{'node': fan}],
+        'output': [{'node': fan, 'type': 'flow'}],
     }
     
     return ComplexNode(nodes, edges, incoming_portmap, outgoing_portmap, {'name': 'Fan Construct'}, nodelist=nodelist)
@@ -80,13 +80,13 @@ def construct_ahu1 ():
     Edge('flow', ra_damper, ma_temperature, edgelist=edges)
     
     incoming_portmap = {
-        'outside air': [{'node': oa_temperature}],
-        'return air': [{'node': ra_temperature}],
+        'outside air': [{'node': oa_temperature, 'type': 'flow'}],
+        'return air': [{'node': ra_temperature, 'type': 'flow'}],
     }
     
     outgoing_portmap = {
-        'exhaust air': [{'node': ea_damper}],
-        'supply air': [{'node': sa_pressure}],
+        'exhaust air': [{'node': ea_damper, 'type': 'flow'}],
+        'supply air': [{'node': sa_pressure, 'type': 'flow'}],
     }
     
     return ComplexNode(nodes, edges, incoming_portmap, outgoing_portmap, {'name': 'AHU-1'})
@@ -95,15 +95,17 @@ def nx_draw (g):
     labels = {}
     for node in g.nodes():
         labels[node] = g.node[node]['name']
-    positions = nx.spring_layout(g, iterations=200)
+    positions = nx.spring_layout(g, iterations=2000)
+#    positions = nx.graphviz_layout(g)
     nx.draw(g, positions)
     nx.draw_networkx_labels(g, positions, labels)
     plt.savefig("ahu1.nx.png")
 
 ahu1 = construct_ahu1()
-ahu1.store_dotfile('ahu1.dot')
+
 g = ahu1.export_nx()
 nx_draw(g)
 
+ahu1.store_dotfile('ahu1.dot')
 # dot -Tpdf ahu1.dot -Gnewank -o ahu1.dot.pdf
 

@@ -1,6 +1,8 @@
 from abc import abstractmethod
 import networkx as nx
 
+# TODO: Redo ports so that port-to-port connections become possible
+
 class Node:
     @abstractmethod
     def add_incoming (edge, port):
@@ -112,32 +114,41 @@ class ComplexNode (Node):
         with open(filename, 'w') as fo:
             fo.writelines(map(lambda line: line+'\n', lines))
     
-    def get_primitive_nodes (self, nodelist=[], processed=[]):
+    def get_nodes (self, nodelist=[], processed=[]):
         # guard: don't loop
         if self in processed: return
         processed.append(self)
         
+        print(len(self.nodes))
         for node in self.nodes:
-            if type(node)==PrimitiveNode:
-                if not node in processed:
-                    nodelist.append(node)
+            if not node in processed:
+                print('  '+str(type(node)))
+                if type(node)==ComplexNode:
+                    print('    recurse!')
+                    node.get_nodes(nodelist, processed)
+                nodelist.append(node)
                 processed.append(node)
-            else:
-                node.get_primitive_nodes(nodelist, processed)
-        
+        print('--')
         return nodelist
     
     def find_dsts (self, port, dsts=[], nodelist=[]):
-        # new or processed node?
-        if self in nodelist:
-            return dsts
-        else:
-            nodelist.append(self)
+        print('complex node find dsts')
+        # TODO: add a nodeportlist?
+#        # new or processed node?
+#        if self in nodelist:
+#            return dsts
+#        else:
+#            nodelist.append(self)
         
-        edges = self.incoming['inside'] if port in self.incoming else self.outgoing['outside']
-        
-        for edge in edges:
-            edge.find_dsts(dsts, nodelist)
+        edges = self.incoming[port]['inside'] if port in self.incoming else self.outgoing[port]['outside']
+        print('edges='+str(edges))
+        for edge_dict in edges:
+            node = edge_dict['node']
+            if 'port' in edge_dict:
+                node.find_dsts(edge_dict['port'], dsts, nodelist)
+            else:
+                nodelist.append(node)
+                dsts.append(node)
         
         return dsts
     
@@ -146,7 +157,7 @@ class ComplexNode (Node):
         counter = [0]
         nodemap = {}
         
-        nodes = self.get_primitive_nodes()
+        nodes = self.get_nodes()
         
         # add nodes
         for node in nodes:
@@ -157,15 +168,30 @@ class ComplexNode (Node):
         
         # add edges
         for node in nodes:
+            print('node: '+str(node)+' ('+node.attrs['name']+')')
             if type(node)==PrimitiveNode:
+                print('  primitive')
                 edges = node.get_outgoing()
                 for edge in edges:
+                    print('  edge: '+str(edge))
                     if edge.primitive_dst():
+                        print('    primitive dst='+str(edge.dst.attrs['name']))
                         g.add_edge(nodemap[node],nodemap[edge.dst])
                     else:
+                        print('    complex dst='+str(edge.dst.attrs['name']))
                         dsts = edge.find_dsts()
                         for dst in dsts:
                             g.add_edge(nodemap[node],nodemap[dst])
+            else:
+                for port in node.outgoing:
+                    dsts = []
+                    for edge in node.outgoing[port]['outside']:
+                        edge.find_dsts(dsts)
+                    
+                    print(dsts)
+                    for edgedict in node.outgoing[port]['inside']:
+                        for dst in dsts:
+                            g.add_edge(nodemap[edgedict['node']],nodemap[dst])
         
         return g
 
@@ -192,10 +218,9 @@ class Edge:
         # new or processed node?
         if self.dst in nodelist:
             return dsts
-        else:
-            nodelist.append(self.dst)
         
         if self.primitive_dst():
+            nodelist.append(self.dst)
             dsts.append(self.dst)
         else:
             self.dst.find_dsts(self.dst_port, dsts, nodelist)
