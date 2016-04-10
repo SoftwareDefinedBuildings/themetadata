@@ -119,29 +119,18 @@ class ComplexNode (Node):
         if self in processed: return
         processed.append(self)
         
-        print(len(self.nodes))
         for node in self.nodes:
             if not node in processed:
-                print('  '+str(type(node)))
                 if type(node)==ComplexNode:
-                    print('    recurse!')
                     node.get_nodes(nodelist, processed)
                 nodelist.append(node)
                 processed.append(node)
-        print('--')
+        
         return nodelist
     
     def find_dsts (self, port, dsts=[], nodelist=[]):
-        print('complex node find dsts')
-        # TODO: add a nodeportlist?
-#        # new or processed node?
-#        if self in nodelist:
-#            return dsts
-#        else:
-#            nodelist.append(self)
-        
         edges = self.incoming[port]['inside'] if port in self.incoming else self.outgoing[port]['outside']
-        print('edges='+str(edges))
+        
         for edge_dict in edges:
             node = edge_dict['node']
             if 'port' in edge_dict:
@@ -168,17 +157,12 @@ class ComplexNode (Node):
         
         # add edges
         for node in nodes:
-            print('node: '+str(node)+' ('+node.attrs['name']+')')
             if type(node)==PrimitiveNode:
-                print('  primitive')
                 edges = node.get_outgoing()
                 for edge in edges:
-                    print('  edge: '+str(edge))
                     if edge.primitive_dst():
-                        print('    primitive dst='+str(edge.dst.attrs['name']))
                         g.add_edge(nodemap[node],nodemap[edge.dst])
                     else:
-                        print('    complex dst='+str(edge.dst.attrs['name']))
                         dsts = edge.find_dsts()
                         for dst in dsts:
                             g.add_edge(nodemap[node],nodemap[dst])
@@ -188,7 +172,6 @@ class ComplexNode (Node):
                     for edge in node.outgoing[port]['outside']:
                         edge.find_dsts(dsts)
                     
-                    print(dsts)
                     for edgedict in node.outgoing[port]['inside']:
                         for dst in dsts:
                             g.add_edge(nodemap[edgedict['node']],nodemap[dst])
