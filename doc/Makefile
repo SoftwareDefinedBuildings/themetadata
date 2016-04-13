@@ -19,6 +19,9 @@ figs/ahu1_from_writeboard.pdf: figs/ahu1_from_writeboard.svg
 figs/aspects-graph-example.pdf: figs/aspects-graph-example.svg
 	inkscape -z --file=figs/aspects-graph-example.svg -D --export-pdf=figs/aspects-graph-example.pdf
 
+figs/soda_hx-1.pdf: figs/soda_hx-1.svg
+	inkscape -z --file=figs/soda_hx-1.svg -D --export-pdf=figs/soda_hx-1.pdf
+
 
 
 post-meeting-motes-20160323.pdf: post-meeting-motes-20160323.tex figs/ahu1_from_writeboard.pdf figs/aspects-graph-example.pdf
